@@ -1,0 +1,16 @@
+# Build
+target/
+
+# Keystores e certificados
+*.p12
+*.jks
+
+# Variaveis de ambiente / segredos
+.env
+*.env
+!*.env.example
+
+# IDEs
+.idea/
+.vscode/
+*.iml

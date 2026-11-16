@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' - Cadastro de Produtos'">Cadastro de Produtos</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f5f7; color: #222; margin: 0; }
+        main { max-width: 720px; margin: 2rem auto; background: #fff; padding: 1.5rem 2rem; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+        h1 { margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #ddd; }
+        .num { text-align: right; }
+        .acoes { display: flex; gap: .75rem; align-items: center; }
+        .acoes form { margin: 0; }
+        a { color: #1a5fb4; }
+        label { display: block; margin-top: 1rem; font-weight: bold; }
+        input { width: 100%; padding: .5rem; box-sizing: border-box; border: 1px solid #bbb; border-radius: 4px; }
+        button, .botao { background: #1a5fb4; color: #fff; border: 0; padding: .5rem 1rem; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 1rem; }
+        button.perigo { background: #c01c28; padding: .3rem .7rem; font-size: .9rem; }
+        .erro { color: #c01c28; margin: .25rem 0 0; }
+    </style>
+</head>
+</html>
