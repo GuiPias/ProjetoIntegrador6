@@ -1,0 +1,62 @@
+﻿{
+    "Snapshots": [
+        {
+            "Tags": [
+                {
+                    "Key": "aws:dlm:lifecycle-policy-id",
+                    "Value": "policy-0a1c4a6e10915c6c3"
+                },
+                {
+                    "Key": "Backup",
+                    "Value": "diario"
+                },
+                {
+                    "Key": "Entrega",
+                    "Value": "2"
+                },
+                {
+                    "Key": "TipoBackup",
+                    "Value": "dlm-diario"
+                },
+                {
+                    "Key": "aws:dlm:lifecycle-schedule-name",
+                    "Value": "diario-filho"
+                },
+                {
+                    "Key": "Grupo",
+                    "Value": "grupo-CadastroDeitens"
+                },
+                {
+                    "Key": "dlm:managed",
+                    "Value": "true"
+                },
+                {
+                    "Key": "ManagedBy",
+                    "Value": "terraform"
+                },
+                {
+                    "Key": "Name",
+                    "Value": "disco-banco"
+                },
+                {
+                    "Key": "Projeto",
+                    "Value": "integrador"
+                }
+            ],
+            "StorageTier": "standard",
+            "TransferType": "standard",
+            "CompletionTime": "2026-11-17T03:19:40.462000+00:00",
+            "FullSnapshotSizeInBytes": 9002024960,
+            "SnapshotId": "snap-0b0eaf05e5314f5d4",
+            "VolumeId": "vol-0258b4a00a29b1b0c",
+            "State": "completed",
+            "StartTime": "2026-11-17T03:11:26.049000+00:00",
+            "Progress": "100%",
+            "OwnerId": "459222093208",
+            "Description": "Created for policy: policy-0a1c4a6e10915c6c3 schedule: diario-filho",
+            "VolumeSize": 20,
+            "Encrypted": true,
+            "KmsKeyId": "arn:aws:kms:sa-east-1:459222093208:key/6b92aa64-def9-48ea-91ac-6484b49fa7a5"
+        }
+    ]
+}

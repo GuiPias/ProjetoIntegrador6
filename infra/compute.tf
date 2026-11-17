@@ -27,6 +27,7 @@ resource "aws_key_pair" "grupo" {
 resource "aws_instance" "bastion" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.bastion_instance_type
+  ebs_optimized               = true
   subnet_id                   = aws_subnet.public.id
   private_ip                  = var.bastion_ip
   vpc_security_group_ids      = [aws_security_group.bastion.id]
@@ -79,6 +80,7 @@ resource "aws_eip_association" "bastion" {
 resource "aws_instance" "db" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.db_instance_type
+  ebs_optimized               = true
   subnet_id                   = aws_subnet.private.id
   private_ip                  = var.db_ip
   vpc_security_group_ids      = [aws_security_group.db.id]
@@ -131,6 +133,7 @@ resource "aws_instance" "db" {
 resource "aws_instance" "app" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.app_instance_type
+  ebs_optimized               = true
   subnet_id                   = aws_subnet.public.id
   private_ip                  = var.app_ip
   vpc_security_group_ids      = [aws_security_group.app.id]
