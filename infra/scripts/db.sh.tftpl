@@ -1,0 +1,25 @@
+#!/bin/bash
+set -eu
+exec > >(tee -a /var/log/user-data.log) 2>&1
+
+# S1: endurecimento do SSH (sem senha e sem login direto como root)
+cat > /etc/ssh/sshd_config.d/01-hardening.conf <<'EOF'
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no
+EOF
+systemctl restart ssh
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+apt-get install -y postgresql
+
+CONF_DIR=$(ls -d /etc/postgresql/*/main)
+sed -i "s/^#\?listen_addresses.*/listen_addresses = 'localhost,${db_ip}'/" "$CONF_DIR/postgresql.conf"
+echo "host ${db_name} ${db_user} ${app_ip}/32 scram-sha-256" >> "$CONF_DIR/pg_hba.conf"
+systemctl restart postgresql
+
+sudo -u postgres psql -v ON_ERROR_STOP=1 <<SQL
+CREATE USER ${db_user} WITH PASSWORD '${db_password}';
+CREATE DATABASE ${db_name} OWNER ${db_user};
+SQL

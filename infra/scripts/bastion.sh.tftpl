@@ -1,0 +1,11 @@
+#!/bin/bash
+set -eu
+exec > >(tee -a /var/log/user-data.log) 2>&1
+
+# S1: endurecimento do SSH (sem senha e sem login direto como root)
+cat > /etc/ssh/sshd_config.d/01-hardening.conf <<'EOF'
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no
+EOF
+systemctl restart ssh

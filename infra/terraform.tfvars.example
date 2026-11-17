@@ -1,0 +1,10 @@
+# Copie para terraform.tfvars (que NÃO vai para o Git) e ajuste os valores.
+# As senhas NÃO ficam aqui: use as variáveis de ambiente TF_VAR_db_password
+# e TF_VAR_keystore_password.
+
+grupo            = "grupo-x"
+ssh_allowed_cidr = "SEU_IP_PUBLICO/32"
+ssh_public_key   = "ssh-ed25519 AAAA...cole-aqui-a-chave-publica... grupo"
+
+# Opcional: URL pública do produtos.jar (release do GitHub) para instalar automaticamente.
+# jar_url = "https://github.com/GuiPias/ProjetoIntegrador6/releases/download/v1/produtos.jar"

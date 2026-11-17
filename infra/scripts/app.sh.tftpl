@@ -1,0 +1,67 @@
+#!/bin/bash
+set -eu
+exec > >(tee -a /var/log/user-data.log) 2>&1
+
+# S1: endurecimento do SSH (sem senha e sem login direto como root)
+cat > /etc/ssh/sshd_config.d/01-hardening.conf <<'EOF'
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no
+EOF
+systemctl restart ssh
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+apt-get install -y openjdk-21-jre-headless curl
+
+id produtos >/dev/null 2>&1 || useradd --system --home-dir /opt/produtos --shell /usr/sbin/nologin produtos
+mkdir -p /opt/produtos /etc/produtos
+
+# S3: keystore autoassinado para o HTTPS (gerado na instância, nunca vai para o Git)
+keytool -genkeypair -alias produtos -keyalg RSA -keysize 2048 -storetype PKCS12 \
+  -keystore /etc/produtos/keystore.p12 -storepass '${keystore_password}' -keypass '${keystore_password}' \
+  -validity 365 -dname "CN=produtos-app,O=Projeto Integrador"
+
+# S4: segredos apenas neste arquivo, com permissão restrita (fora do código e do Git)
+cat > /etc/produtos/produtos.env <<EOF
+DB_HOST=${db_host}
+DB_PORT=5432
+DB_NAME=${db_name}
+DB_USER=${db_user}
+DB_PASSWORD=${db_password}
+SERVER_PORT=443
+SSL_KEYSTORE_PATH=/etc/produtos/keystore.p12
+SSL_KEYSTORE_PASSWORD=${keystore_password}
+EOF
+chown -R root:produtos /etc/produtos
+chmod 750 /etc/produtos
+chmod 640 /etc/produtos/produtos.env /etc/produtos/keystore.p12
+chown -R produtos:produtos /opt/produtos
+
+cat > /etc/systemd/system/produtos.service <<'EOF'
+[Unit]
+Description=Cadastro de produtos (Spring Boot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=produtos
+Group=produtos
+EnvironmentFile=/etc/produtos/produtos.env
+ExecStart=/usr/bin/java -jar /opt/produtos/produtos.jar
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable produtos
+
+%{ if jar_url != "" ~}
+curl -fL -o /opt/produtos/produtos.jar '${jar_url}'
+chown produtos:produtos /opt/produtos/produtos.jar
+systemctl start produtos
+%{ endif ~}
