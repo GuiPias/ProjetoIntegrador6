@@ -1,5 +1,7 @@
 # ADR-003: Localização do banco de dados
 
+**Status:** Aceita e implantada. A consequência de ficar sem backup foi tratada pelo ADR-005, que complementa esta decisão. Para a proposta de alta disponibilidade (não implantada), revista pelo ADR-004, que usa RDS Multi-AZ.
+
 No contexto de uma aplicação que persiste produtos (nome e quantidade em estoque) em um banco PostgreSQL,
 diante da necessidade de um banco inacessível pela internet, de baixo custo (pago pelo grupo) e que possa ser recriado por script,
 decidimos instalar o PostgreSQL 16 em uma instância EC2 t3.micro na sub-rede privada `priv-a`, acessível apenas pela `sg-app` na porta 5432,

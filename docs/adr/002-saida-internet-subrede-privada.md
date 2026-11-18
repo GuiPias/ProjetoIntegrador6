@@ -1,5 +1,7 @@
 # ADR-002: Saída para a internet da sub-rede privada
 
+**Status:** Aceita e implantada. Para a proposta de alta disponibilidade (não implantada), revista pelo ADR-004, que usa um NAT Gateway por zona.
+
 No contexto de um banco PostgreSQL em sub-rede privada que precisa baixar e atualizar pacotes,
 diante da exigência de que ele não tenha IP público e de que o NAT gerenciado seja obrigatório na Entrega 2,
 decidimos usar um NAT Gateway gerenciado na sub-rede `pub-a`, com Elastic IP, e a rota `0.0.0.0/0 → NAT Gateway` na tabela `rt-priv`,
