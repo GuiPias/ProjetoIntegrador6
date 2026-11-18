@@ -8,9 +8,9 @@ As evidências citadas estão em `docs/evidencias/`. A infraestrutura foi criada
 
 | # | Controle | Como foi aplicado | Evidência |
 |---|---|---|---|
-| S1 | Endurecimento do SSH | Os três scripts de inicialização (`infra/scripts/*.sh.tftpl`) gravam `/etc/ssh/sshd_config.d/01-hardening.conf` com `PasswordAuthentication no`, `KbdInteractiveAuthentication no` e `PermitRootLogin no`, e reiniciam o serviço. O acesso é só por chave. | `ssh-bastion.png` (login por chave funcionando). **Pendente:** recusa de senha (`Permission denied (publickey)`), coletada na próxima subida (seção 6). |
+| S1 | Endurecimento do SSH | Os três scripts de inicialização (`infra/scripts/*.sh.tftpl`) gravam `/etc/ssh/sshd_config.d/01-hardening.conf` com `PasswordAuthentication no`, `KbdInteractiveAuthentication no` e `PermitRootLogin no`, e reiniciam o serviço. O acesso é só por chave. | `ssh-bastion.png` (login por chave funcionando). `ssh-senha-recusada.txt` (tentativa de login por senha recusada com `Permission denied (publickey)`) e `ssh-hardening-bastion.txt` (`passwordauthentication no`, `permitrootlogin no` na configuração efetiva do `sshd`). |
 | S2 | Saída restrita | Nenhum grupo tem a regra padrão de saída total. Bastion: SSH para a aplicação e para o banco. Aplicação: PostgreSQL (5432) só para o grupo do banco. Os três: HTTP/HTTPS (80/443) para atualização de pacotes e DNS (TCP/UDP 53) apenas para o resolvedor da VPC. Todas as regras têm descrição. | `terraform-plan-sem-mudancas.txt`, `security.tf` |
-| S3 | HTTPS | A aplicação atende somente por HTTPS na porta 443, com certificado **autoassinado** gerado no primeiro boot (keystore PKCS12). Não existe conector HTTP: as portas 80 e 8080 estão fechadas no grupo de segurança. | `app-lista.png` (https com aviso de certificado), `portas-fechadas.png` (HTTP e 8080 com timeout). **Pendente:** `curl -vk` com a negociação TLS (seção 6). |
+| S3 | HTTPS | A aplicação atende somente por HTTPS na porta 443, com certificado **autoassinado** gerado no primeiro boot (keystore PKCS12). Não existe conector HTTP: as portas 80 e 8080 estão fechadas no grupo de segurança. | `app-lista.png` (https com aviso de certificado), `portas-fechadas.png` (HTTP e 8080 com timeout). `curl-https-tls.txt` (`HTTP/1.1 200` por HTTPS) e `openssl-tls.txt` (TLS 1.3, `TLS_AES_256_GCM_SHA384`, certificado autoassinado `CN = produtos-app`, `Verify return code: 18`). |
 | S4 | Gestão de segredos | Senha do banco e senha do keystore são variáveis Terraform com `sensitive = true`, validadas (mínimo 12 caracteres), fornecidas por variáveis de ambiente `TF_VAR_...`. Nenhum segredo está no código nem no Git. Dentro da instância, o arquivo `/etc/produtos/produtos.env` tem permissão 640 (dono root, grupo `produtos`). Limitações na seção 4, ameaça 4. | `gitleaks.json` (nenhum vazamento em 8 commits), `variables.tf` |
 | S5 | Menor privilégio | Nenhuma instância acessa serviços da AWS, então **nenhuma instância recebe papel IAM e nenhuma chave de acesso fica gravada nelas**. Sem papel, uma credencial roubada de dentro da instância não dá acesso a nada na conta. O único papel criado é o do serviço de backup (DLM), com a política gerenciada da AWS `AWSDataLifecycleManagerServiceRole`. | `backup.tf` |
 | S6 | Criptografia em repouso | Os três discos raiz declaram `encrypted = true` no código. Os snapshots do backup são criados a partir de um volume criptografado e herdam a criptografia. Não há bucket nem banco gerenciado. | `ebs-imdsv2.png` (`Criptografado = True` nos 3 discos). `snapshot-dlm.json` (snapshot do DLM com `"Encrypted": true`). |
@@ -83,9 +83,10 @@ trivy config infra --tf-vars infra\terraform.tfvars
 gitleaks git . -v
 ```
 
-## 6. Evidências pendentes
+## 6. Evidências coletadas na subida de 18/11/2026
 
-S6 já está comprovada (`docs/evidencias/snapshot-dlm.json`, `"Encrypted": true`). As outras duas serão coletadas em uma subida curta da infraestrutura, antes da entrega, e este documento será atualizado:
+As três evidências que estavam pendentes foram coletadas em uma subida curta da infraestrutura (47 recursos; `terraform plan` seguinte sem mudanças), todas em `docs/evidencias/`:
 
-- **S1:** `ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password ubuntu@<IP_DO_BASTION>`, esperando `Permission denied (publickey)`.
-- **S3:** `curl -vk https://<IP_DA_APLICACAO>`, mostrando a versão do TLS negociada.
+- **S1:** `ssh-senha-recusada.txt` e `ssh-hardening-bastion.txt`.
+- **S3:** `curl-https-tls.txt` e `openssl-tls.txt`.
+- **S6:** `snapshot-dlm.json` (`"Encrypted": true`).
