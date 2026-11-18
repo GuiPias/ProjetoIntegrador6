@@ -13,7 +13,7 @@ As evidências citadas estão em `docs/evidencias/`. A infraestrutura foi criada
 | S3 | HTTPS | A aplicação atende somente por HTTPS na porta 443, com certificado **autoassinado** gerado no primeiro boot (keystore PKCS12). Não existe conector HTTP: as portas 80 e 8080 estão fechadas no grupo de segurança. | `app-lista.png` (https com aviso de certificado), `portas-fechadas.png` (HTTP e 8080 com timeout). **Pendente:** `curl -vk` com a negociação TLS (seção 6). |
 | S4 | Gestão de segredos | Senha do banco e senha do keystore são variáveis Terraform com `sensitive = true`, validadas (mínimo 12 caracteres), fornecidas por variáveis de ambiente `TF_VAR_...`. Nenhum segredo está no código nem no Git. Dentro da instância, o arquivo `/etc/produtos/produtos.env` tem permissão 640 (dono root, grupo `produtos`). Limitações na seção 4, ameaça 4. | `gitleaks.json` (nenhum vazamento em 8 commits), `variables.tf` |
 | S5 | Menor privilégio | Nenhuma instância acessa serviços da AWS, então **nenhuma instância recebe papel IAM e nenhuma chave de acesso fica gravada nelas**. Sem papel, uma credencial roubada de dentro da instância não dá acesso a nada na conta. O único papel criado é o do serviço de backup (DLM), com a política gerenciada da AWS `AWSDataLifecycleManagerServiceRole`. | `backup.tf` |
-| S6 | Criptografia em repouso | Os três discos raiz declaram `encrypted = true` no código. Os snapshots do backup são criados a partir de um volume criptografado e herdam a criptografia. Não há bucket nem banco gerenciado. | `ebs-imdsv2.png` (`Criptografado = True` nos 3 discos). A criptografia do snapshot será conferida na próxima subida (seção 6). |
+| S6 | Criptografia em repouso | Os três discos raiz declaram `encrypted = true` no código. Os snapshots do backup são criados a partir de um volume criptografado e herdam a criptografia. Não há bucket nem banco gerenciado. | `ebs-imdsv2.png` (`Criptografado = True` nos 3 discos). `snapshot-dlm.json` (snapshot do DLM com `"Encrypted": true`). |
 | S7 | Análise automatizada | Checkov (IaC), Trivy (IaC) e Gitleaks (segredos no histórico). Resultados na seção 2. | `results_cli.txt`, `trivy.txt`, `gitleaks.json` |
 | S8 | Proteção da conta | MFA virtual (aplicativo autenticador) habilitado na conta usada pelo grupo. | `mfa-aws.png` |
 
@@ -85,8 +85,7 @@ gitleaks git . -v
 
 ## 6. Evidências pendentes
 
-Serão coletadas em uma subida curta da infraestrutura, antes da entrega, e este documento será atualizado:
+S6 já está comprovada (`docs/evidencias/snapshot-dlm.json`, `"Encrypted": true`). As outras duas serão coletadas em uma subida curta da infraestrutura, antes da entrega, e este documento será atualizado:
 
 - **S1:** `ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password ubuntu@<IP_DO_BASTION>`, esperando `Permission denied (publickey)`.
 - **S3:** `curl -vk https://<IP_DA_APLICACAO>`, mostrando a versão do TLS negociada.
-- **S6:** `aws ec2 describe-snapshots --owner-ids self --query "Snapshots[].Encrypted"`, esperando `true`.
